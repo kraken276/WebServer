@@ -6,18 +6,18 @@ using namespace std;
 namespace my_namespace {
     json_field& json_field::operator[] (size_t i) {
         if (!isarray)
-            throw exception("элемент не является массивом");
+            throw exception("Element is not an array");
         if (i < fields.size())
             return *(fields.begin() + i);
-        throw exception("элемент не найден");
+        throw exception("Element not found");
     }
     json_field& json_field::operator[] (string& name) {
         if (isarray)
-            throw exception("элемент является массивом");
+            throw exception("Element is an array");
         for (auto it = fields.begin(); it != fields.end(); it++)
             if ((*it).name == name)
                 return *it;
-        throw exception("элемент не найден");
+        throw exception("Element not found");
     };
     json_field::json_field() {
         isarray = false;
