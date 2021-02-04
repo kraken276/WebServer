@@ -44,5 +44,5 @@ namespace my_namespace {
     string getfileresponse(my_request& request);
     string getresponse(my_request& request);
     void requestthread(SOCKET* socket);
-    string getaddressname(SOCKET& socket);
+    void getaddressname(SOCKET& socket, char* address, int addresslen);
 }

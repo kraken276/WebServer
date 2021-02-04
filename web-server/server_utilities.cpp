@@ -83,15 +83,14 @@ namespace my_namespace {
                 s >> temp;
                 response_body << temp;
             }
-            response << "HTTP/1.1 200 OK\r\n"
-                << "Version: HTTP/1.1\r\n"
-                << "Content-Type: text/html; charset=utf-8\r\n"
-                << "Content-Length: " << response_body.str().length()
-                << "\r\n\r\n"
-                << response_body.str();
-            return response.str();
         }
-        throw exception("file not found");
+        response << "HTTP/1.1 200 OK\r\n"
+            << "Version: HTTP/1.1\r\n"
+            << "Content-Type: text/html; charset=utf-8\r\n"
+            << "Content-Length: " << response_body.str().length()
+            << "\r\n\r\n"
+            << response_body.str();
+        return response.str();
     }
     string getresponse(my_request& request) {
         string response;
@@ -122,12 +121,10 @@ namespace my_namespace {
         closesocket(*socket);
         delete socket;
     }
-    string getaddressname(SOCKET& socket) {
+    void getaddressname(SOCKET& socket, char* address, int addresslen) {
         sockaddr_in name;
         socklen_t namelen = sizeof(name);
         getpeername(socket, (sockaddr*)&name, &namelen);
-        char address[16];
-        inet_ntop(AF_INET, &name.sin_addr, address, sizeof(address));
-        return address;
+        inet_ntop(AF_INET, &name.sin_addr, address, addresslen);
     }
 }

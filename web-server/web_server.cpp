@@ -72,7 +72,9 @@ int __cdecl main(int argc, char* argv[])
     do {
         ClientSocket = new SOCKET;
         *ClientSocket = accept(ListenSocket, NULL, NULL);
-        printf("new connection from %s: starting new thread\n", getaddressname(*ClientSocket).c_str());
+        char address[16];
+        getaddressname(*ClientSocket, address, 16);
+        printf("new connection from %s: starting new thread\n", address);
         thread requestthread(requestthread, ClientSocket);
         requestthread.detach();
     } while (true);
