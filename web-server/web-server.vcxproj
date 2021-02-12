@@ -140,9 +140,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="json_field.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="my_request.cpp" />
+    <ClCompile Include="my_webthread.cpp" />
     <ClCompile Include="server_utilities.cpp" />
-    <ClCompile Include="web_server.cpp" />
+    <ClCompile Include="my_webserver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="my_headers.h" />

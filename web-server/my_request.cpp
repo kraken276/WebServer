@@ -6,8 +6,8 @@ using namespace std;
 namespace my_namespace {
     my_request::my_request(string& source) {
         string mainblock, body;
-        int size = source.size();
-        int split = source.find("\r\n\r\n");
+        size_t size = source.size();
+        size_t split = source.find("\r\n\r\n");
         if (split != -1) {
             mainblock = source.substr(0, split);
             body = source.substr(split + 4, size - split - 4);
@@ -19,6 +19,7 @@ namespace my_namespace {
         if (contenttype == "application/json")
             json_body = json_field(body);
     }
+    my_request::my_request() {}
     void my_request::setmainprops(string& mainblock) {
         vector<string> lines, props;
         split(lines, mainblock, "\r\n");

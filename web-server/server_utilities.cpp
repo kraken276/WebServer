@@ -2,13 +2,13 @@
 
 #include <sstream>
 #include <fstream>
+#include <vector>
 #include <ws2tcpip.h>
 #include "my_headers.h"
 
 using namespace std;
-
+//
 namespace my_namespace {
-    string rootpath;
     void replace(string& source, string replaced, string replacing) {
         int index = 0;
         while (index != -1) {
@@ -18,9 +18,10 @@ namespace my_namespace {
         }
     }
     void split(vector<string>& lines, string& source, string delimiter) {
-        int size = source.size(),
-            dsize = delimiter.size();
-        int start = 0, end = 0;
+        size_t size = source.size(),
+            dsize = delimiter.size(),
+            start = 0, 
+            end = 0;
         while (end < size) {
             end = source.find(delimiter, start);
             if (end == -1) {
@@ -30,6 +31,7 @@ namespace my_namespace {
             start = end + dsize;
         }
     };
+    string rootpath;
     string getrootpath() {
         if (rootpath == "") {
             char myPath[_MAX_PATH + 1];
@@ -71,60 +73,52 @@ namespace my_namespace {
             << response_body.str();
         return response.str();
     }
-    string getfileresponse(my_request& request) {
-        stringstream response_body, response;
+    void sendfile(my_request& request, SOCKET& socket) {
+        string responsebody, response;
         ifstream s;
         string temp, path, filepath = request.path;
         replace(filepath, "/", "\\");
         path = getrootpath() + filepath;
-        s.open(path);
+        s.open(path, ifstream::binary);
         if (s.is_open()) {
+            long c = 0;
+            long current = 0;
             while (!s.eof()) {
-                s >> temp;
-                response_body << temp;
+                response.clear();
+                responsebody.clear();
+                while (current < 500000) {
+                    if (s.eof())
+                        break;
+                    s >> temp;
+                    current += temp.size();
+                    responsebody += temp;
+                }
+                c += current;
+                current = 0;
+                response += "HTTP/1.1 200 OK\r\n";
+                response += "Version: HTTP/1.1\r\n";
+                response += "Content-Type: text/html; charset=utf-8\r\n";
+                response += "Content-Length: ";
+                response += responsebody.size();
+                response += "\r\n\r\n";
+                response += responsebody;
+                send(socket, response.c_str(), response.size(), 0);
             }
         }
-        response << "HTTP/1.1 200 OK\r\n"
-            << "Version: HTTP/1.1\r\n"
-            << "Content-Type: text/html; charset=utf-8\r\n"
-            << "Content-Length: " << response_body.str().length()
-            << "\r\n\r\n"
-            << response_body.str();
-        return response.str();
     }
-    string getresponse(my_request& request) {
+    void getresponse(my_request& request, SOCKET& socket) {
         string response;
         switch (getrequestpurpose(request)) {
         case 1:
-            response = getfileresponse(request);
+            sendfile(request, socket);
             break;
         default:
             response = getnotfoundpage();
+            send(socket, response.c_str(), response.size(), 0);
             break;
         }
-        return response;
     }
-    void requestthread(SOCKET* socket) {
-        char recvbuf[DEFAULT_BUFLEN];
-        int recvbuflen = DEFAULT_BUFLEN;
-        int result = recv(*socket, recvbuf, recvbuflen, 0);
-        if (result > 0) {
-            string request = string(recvbuf, result);
-            my_request a = my_request(request);
-            string response = getresponse(a);
-            const char* b = response.c_str();
-            int responselen = strlen(b);
-            result = send(*socket, b, responselen, 0);
-            printf("Bytes sent: %d\n", result);
-        }
-        shutdown(*socket, SD_SEND);
-        closesocket(*socket);
-        delete socket;
-    }
-    void getaddressname(SOCKET& socket, char* address, int addresslen) {
-        sockaddr_in name;
-        socklen_t namelen = sizeof(name);
-        getpeername(socket, (sockaddr*)&name, &namelen);
-        inet_ntop(AF_INET, &name.sin_addr, address, addresslen);
+    void processrequest(my_request& request, SOCKET& socket) {
+        getresponse(request, socket);
     }
 }

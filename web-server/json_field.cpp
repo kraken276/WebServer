@@ -1,5 +1,6 @@
-
 #include "my_headers.h"
+#include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -24,14 +25,14 @@ namespace my_namespace {
     };
     json_field::json_field(string& source) {
         removewhitespace(source);
-        int length = source.length();
+        size_t length = source.length();
+        string fieldname, fieldvalue, block;
+        json_field field;
+        size_t namestart, nameend, blockstart, blockend;
         if (length > 2) {
             char first = *source.begin();
             if (first == '{') {
                 isarray = false;
-                string fieldname, fieldvalue, block;
-                json_field field;
-                int namestart, nameend, blockstart, blockend;
                 for (auto it = source.begin() + 1; it != source.end(); it++) {
                     namestart = it - source.begin();
                     nameend = source.find('"', namestart + 2);
@@ -68,9 +69,6 @@ namespace my_namespace {
             }
             else {
                 isarray = true;
-                string fieldvalue, block;
-                json_field field;
-                int blockstart, blockend;
                 for (auto it = source.begin() + 1; it != source.end(); it++) {
                     blockstart = it - source.begin();
                     first = *it;
